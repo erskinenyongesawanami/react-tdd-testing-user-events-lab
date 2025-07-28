@@ -66,26 +66,75 @@ test("displays the correct links", () => {
 
 // Newsletter Form - Initial State
 test("the form includes text inputs for name and email address", () => {
-  // your test code here
+  render(<App />);
+  
+  expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
 });
 
 test("the form includes three checkboxes to select areas of interest", () => {
-  // your test code here
+  render(<App />);
+
+  expect(screen.getByLabelText(/coding/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/design/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/marketing/i)).toBeInTheDocument();
 });
 
 test("the checkboxes are initially unchecked", () => {
-  // your test code here
+  render(<App />);
+
+  expect(screen.getByLabelText(/coding/i)).not.toBeChecked();
+  expect(screen.getByLabelText(/design/i)).not.toBeChecked();
+  expect(screen.getByLabelText(/marketing/i)).not.toBeChecked();
 });
 
-// Newsletter Form - Adding Responses
-test("the page shows information the user types into the name and email address form fields", () => {
-  // your test code here
+import userEvent from "@testing-library/user-event";
+
+test("the page shows information the user types into the name and email address form fields", async () => {
+  render(<App />);
+  const user = userEvent.setup();
+
+  const nameInput = screen.getByLabelText(/name/i);
+  const emailInput = screen.getByLabelText(/email/i);
+
+  await user.type(nameInput, "Moha");
+  await user.type(emailInput, "moha@example.com");
+
+  expect(nameInput).toHaveValue("Moha");
+  expect(emailInput).toHaveValue("moha@example.com");
 });
 
-test("checked status of checkboxes changes when user clicks them", () => {
-  // your test code here
+test("checked status of checkboxes changes when user clicks them", async () => {
+  render(<App />);
+  const user = userEvent.setup();
+
+  const coding = screen.getByLabelText(/coding/i);
+  const design = screen.getByLabelText(/design/i);
+
+  expect(coding).not.toBeChecked();
+  expect(design).not.toBeChecked();
+
+  await user.click(coding);
+  await user.click(design);
+
+  expect(coding).toBeChecked();
+  expect(design).toBeChecked();
+
+  await user.click(design);
+  expect(design).not.toBeChecked();
 });
 
-test("a message is displayed when the user clicks the Submit button", () => {
-  // your test code here
+test("a message is displayed when the user clicks the Submit button", async () => {
+  render(<App />);
+  const user = userEvent.setup();
+
+  await user.type(screen.getByLabelText(/name/i), "Moha");
+  await user.type(screen.getByLabelText(/email/i), "moha@example.com");
+  await user.click(screen.getByLabelText(/coding/i));
+  await user.click(screen.getByRole("button", { name: /submit/i }));
+
+  expect(screen.getByText(/thank you for signing up, moha/i)).toBeInTheDocument();
+  expect(screen.getByText(/we’ll email you at moha@example.com/i)).toBeInTheDocument();
+  expect(screen.getByText(/your interests: coding/i)).toBeInTheDocument();
 });
+
